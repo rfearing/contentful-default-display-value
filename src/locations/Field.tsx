@@ -1,19 +1,59 @@
-import React from 'react';
-import { Paragraph } from '@contentful/f36-components';
+import React, { useState } from 'react';
+import { Button, Menu } from '@contentful/f36-components';
+import { PlusIcon } from '@contentful/f36-icons';
 import { FieldAppSDK } from '@contentful/app-sdk';
 import { /* useCMA, */ useSDK } from '@contentful/react-apps-toolkit';
+// import { ContentTypeFieldValidation } from 'contentful-management'
+
 
 const Field = () => {
   const sdk = useSDK<FieldAppSDK>();
-  /*
-     To use the cma, inject it as follows.
-     If it is not needed, you can remove the next line.
-  */
-  // const cma = useCMA();
-  // If you only want to extend Contentful's default editing experience
-  // reuse Contentful's editor components
-  // -> https://www.contentful.com/developers/docs/extensibility/field-editors/
-  return <Paragraph>Hello Entry Field Component (AppId: {sdk.ids.app})</Paragraph>;
+
+  const itemsValidations = (sdk.field.type === 'Array') && sdk.field.items.validations ? sdk.field.items.validations  : []
+  const linkValidations = sdk.field.validations
+  const validations = [...itemsValidations, ...linkValidations]
+  const allowedTypes: string[] = []
+  // const allowedTypeNames: string[] = []
+
+  if (validations && validations.length > 0) {
+    validations.forEach(validation => {
+      if (validation?.linkContentType) {
+        validation.linkContentType.forEach(type => {
+          allowedTypes.push(String(type))
+          // allowedTypeName.push(/*..*/)
+        })
+      }
+    })
+  }
+
+  const availableTypes = allowedTypes.length > 0 ? { contentTypes: allowedTypes } : {}
+
+  console.log({name: sdk.field.name, all: sdk.field, validations, availableTypes})
+
+  return (
+    <Menu>
+      <Menu.Trigger>
+        <Button>
+          <PlusIcon variant="secondary" size="tiny" />
+          Add content
+        </Button>
+      </Menu.Trigger>
+
+      <Menu.List>
+        {/* TODO: Add size validation */}
+        <Menu.Item onClick={() => sdk.dialogs.selectSingleEntry(availableTypes)}>
+          Add existing content
+        </Menu.Item>
+        {/* TODO: Maybe add map of allowedTypes to Add {type} */}
+
+        <Menu.Divider />
+
+        {/* Todo: Add new content and ensure that adding new is allowed */}
+        <Menu.SectionTitle>Add new content</Menu.SectionTitle>
+
+      </Menu.List>
+    </Menu>
+  )
 };
 
 export default Field;
