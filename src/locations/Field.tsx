@@ -1,8 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Button, Menu } from '@contentful/f36-components';
-import { PlusIcon } from '@contentful/f36-icons';
+import { ChevronDownIcon } from '@contentful/f36-icons';
 import { FieldAppSDK, ContentType } from '@contentful/app-sdk';
 import { useSDK } from '@contentful/react-apps-toolkit';
+import { css } from 'emotion';
+
+type locale = {[key: string]: string}
+
+const buttonStyles = css`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
 
 const Field = () => {
   const sdk = useSDK<FieldAppSDK>();
@@ -27,8 +36,6 @@ const Field = () => {
     fetchContentTypes();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  type locale = {[key: string]: string}
-
   // We cannot open a new entry dialog with a dynamic default value 🫤 so we need to create the entry first
   const createEntry = async (contentTypeId: string, key: string, value: locale) => {
     return sdk.cma.entry.create({
@@ -46,8 +53,10 @@ const Field = () => {
     <Menu>
       <Menu.Trigger>
         <Button>
-          <PlusIcon variant="secondary" size="tiny" />
-          Add content
+          <span className={buttonStyles}>
+            Add content&nbsp;&nbsp;
+            <ChevronDownIcon variant="secondary" size="tiny" />
+          </span>
         </Button>
       </Menu.Trigger>
 
@@ -70,11 +79,18 @@ const Field = () => {
         {/* Todo: Add new content and ensure that adding new is allowed */}
         {contentTypes.map(contentType => (
           <Menu.Item onClick={() => {
-            const title = `${sdk.entry.fields['title'].getValue()}::${contentType.name}`
-            createEntry(contentType.sys.id, 'title', { 'en-US': title })
+            const displayField = contentType.displayField;
+            // `title` would be "Page Title::Section" if:
+            // - current content type is `Page`
+            // - the display field value is set to "Page Title"
+            // - the linked content type is `Section`
+            const title = `${String(sdk.entry.fields[displayField].getValue())}::${contentType.name}`;
+            const locale = sdk.locales.default;
+
+            createEntry(contentType.sys.id, contentType.displayField, { [locale]: title })
               .then(entity => {
-                sdk.navigator.openEntry(entity.sys.id, { slideIn: true })
-              })
+                sdk.navigator.openEntry(entity.sys.id, { slideIn: true });
+              });
             }
           }>
             Add new {contentType.name}
