@@ -23,8 +23,6 @@ const Field = () => {
   const validations = [...itemsValidations, ...linkValidations]
   // modelRestrictions: Array of permitted content model IDs (empty array if no restrictions)
   const modelRestrictions: string[] = validations.flatMap(validation => validation?.linkContentType ?? []);
-  // modelOptions: Options for the selectSingleEntry dialog
-  const modelOptions = modelRestrictions.length > 0 ? { contentTypes: modelRestrictions } : {}
 
   // Fetch the content types so that we can display the names, e.g. "Add new {content type name}"
   const [contentTypes, setContentTypes] = useState<ContentType[]>([]);
@@ -49,6 +47,14 @@ const Field = () => {
     });
   };
 
+  if (contentTypes.length === 0) {
+    return (
+      <Button onClick={() => sdk.dialogs.selectSingleEntry()}>
+        Add existing content
+      </Button>
+    )
+  }
+
   return (
     <Menu>
       <Menu.Trigger>
@@ -60,31 +66,28 @@ const Field = () => {
         </Button>
       </Menu.Trigger>
 
+      {/* TODO: Add size validation */}
+      {/* TODO: Show entities in field */}
       <Menu.List>
-        {/* TODO: Add size validation */}
-        <Menu.Item onClick={() => sdk.dialogs.selectSingleEntry(modelOptions)}>
-          Add existing content
-        </Menu.Item>
+        <Menu.SectionTitle>Add existing content</Menu.SectionTitle>
 
-        {contentTypes.length > 0 && (
-          <>
-            <Menu.Divider />
+        {contentTypes.map(contentType => (
+          <Menu.Item onClick={() => sdk.dialogs.selectSingleEntry({contentTypes: [contentType.sys.id]})}>
+            {contentType.name}
+          </Menu.Item>
+        ))}
 
-            <Menu.SectionTitle>
-              Add new content
-            </Menu.SectionTitle>
-          </>
-        )}
+        <Menu.Divider />
+        <Menu.SectionTitle>Add new content</Menu.SectionTitle>
 
         {/* Todo: Add new content and ensure that adding new is allowed */}
         {contentTypes.map(contentType => (
           <Menu.Item onClick={() => {
-            const displayField = contentType.displayField;
             // `title` would be "Page Title::Section" if:
             // - current content type is `Page`
             // - the display field value is set to "Page Title"
             // - the linked content type is `Section`
-            const title = `${String(sdk.entry.fields[displayField].getValue())}::${contentType.name}`;
+            const title = `${String(sdk.entry.fields[sdk.contentType.displayField].getValue())}::${contentType.name}`;
             const locale = sdk.locales.default;
 
             createEntry(contentType.sys.id, contentType.displayField, { [locale]: title })
@@ -93,10 +96,9 @@ const Field = () => {
               });
             }
           }>
-            Add new {contentType.name}
+           {contentType.name}
           </Menu.Item>
         ))}
-
       </Menu.List>
     </Menu>
   )
