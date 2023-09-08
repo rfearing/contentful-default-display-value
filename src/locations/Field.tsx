@@ -90,6 +90,7 @@ const Field = () => {
 
         {contentTypes.map(contentType => (
           <Menu.Item onClick={() => sdk.dialogs.selectSingleEntry({contentTypes: [contentType.sys.id]})}>
+            {/* TODO: Save selecting existing */}
             {contentType.name}
           </Menu.Item>
         ))}
