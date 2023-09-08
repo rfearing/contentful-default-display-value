@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button, Menu } from '@contentful/f36-components';
 import { ChevronDownIcon } from '@contentful/f36-icons';
-import { FieldAppSDK, ContentType } from '@contentful/app-sdk';
+import { FieldAppSDK, ContentType, Entry } from '@contentful/app-sdk';
 import { useSDK } from '@contentful/react-apps-toolkit';
 import { css } from 'emotion';
 
-type locale = {[key: string]: string}
+type Locale = {[key: string]: string}
 
 const buttonStyles = css`
   display: flex;
@@ -15,6 +15,7 @@ const buttonStyles = css`
 
 const Field = () => {
   const sdk = useSDK<FieldAppSDK>();
+  const locale = sdk.locales.default;
 
   // linkValidations: Top level validations
   const linkValidations = sdk.field.validations
@@ -35,7 +36,7 @@ const Field = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // We cannot open a new entry dialog with a dynamic default value 🫤 so we need to create the entry first
-  const createEntry = async (contentTypeId: string, key: string, value: locale) => {
+  const createEntry = async (contentTypeId: string, key: string, value: Locale) => {
     return sdk.cma.entry.create({
       spaceId: sdk.ids.space,
       environmentId: sdk.ids.environment,
@@ -45,6 +46,22 @@ const Field = () => {
         [key]: value
       }
     });
+  };
+
+  const attachEntry = (entity: Entry<{[x: string]: Locale}>) => {
+    const previous = sdk.entry.fields[sdk.field.id].getValue() || [];
+    sdk.entry.fields[sdk.field.id].setValue([
+      ...previous,
+      {
+        sys: {
+          type: "Link",
+          linkType: "Entry",
+          id: entity.sys.id,
+        }
+      }],
+      locale
+    );
+    sdk.navigator.openEntry(entity.sys.id, { slideIn: true });
   };
 
   if (contentTypes.length === 0) {
@@ -66,8 +83,8 @@ const Field = () => {
         </Button>
       </Menu.Trigger>
 
+      {/* TODO Show Existing!! */}
       {/* TODO: Add size validation */}
-      {/* TODO: Show entities in field */}
       <Menu.List>
         <Menu.SectionTitle>Add existing content</Menu.SectionTitle>
 
@@ -88,14 +105,8 @@ const Field = () => {
             // - the display field value is set to "Page Title"
             // - the linked content type is `Section`
             const title = `${String(sdk.entry.fields[sdk.contentType.displayField].getValue())}::${contentType.name}`;
-            const locale = sdk.locales.default;
-
-            createEntry(contentType.sys.id, contentType.displayField, { [locale]: title })
-              .then(entity => {
-                sdk.navigator.openEntry(entity.sys.id, { slideIn: true });
-              });
-            }
-          }>
+            createEntry(contentType.sys.id, contentType.displayField, { [locale]: title }).then(entity => attachEntry(entity));
+          }}>
            {contentType.name}
           </Menu.Item>
         ))}
