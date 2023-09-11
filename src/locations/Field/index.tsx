@@ -72,8 +72,17 @@ const Field = () => {
     // Attach new entry to the existing entries
     .then(async entity => {
       const updatedEntries = await attachEntry({sdk, entity, entries, locale})
+      sdk.navigator.openEntry(entity.sys.id, { slideIn: true });
       setEntries(updatedEntries)
     })
+  }
+
+  const onAdd = async (contentType: string) => {
+    const entry = await sdk.dialogs.selectSingleEntry({contentTypes: [contentType]})
+    if (entry) {
+      const updatedEntries = await attachEntry({sdk, entity: entry as Entry, entries, locale})
+      setEntries(updatedEntries)
+    }
   }
 
   // Remove entries
@@ -105,9 +114,7 @@ const Field = () => {
 
           <Options
             contentTypes={contentTypes}
-            sdk={sdk}
-            locale={locale}
-            entries={entries}
+            onAdd={onAdd}
             onCreate={onCreate}
           />
         </Menu>

@@ -1,19 +1,15 @@
 import { Menu } from '@contentful/f36-components';
-import { FieldAppSDK, ContentType, Entry } from '@contentful/app-sdk';
+import { ContentType } from '@contentful/app-sdk';
 
 type OptionsProps = {
 	contentTypes: ContentType[];
-	sdk: FieldAppSDK;
-	locale: string;
-	entries: Entry[];
+	onAdd: (contentType: string) => void;
 	onCreate: (contentType: ContentType) => void;
 }
 
 const Options = ({
 	contentTypes,
-	sdk,
-	locale,
-	entries,
+	onAdd,
 	onCreate,
 }: OptionsProps) => {
 	return (
@@ -21,11 +17,10 @@ const Options = ({
 			<Menu.SectionTitle>Add existing content</Menu.SectionTitle>
 
 			{/* TODO: Check if adding existing is permitted */}
-			{/* TODO: Save selecting existing */}
 			{contentTypes.map(contentType => (
 				<Menu.Item
-				key={contentType.sys.id + 'old'}
-				onClick={() => sdk.dialogs.selectSingleEntry({contentTypes: [contentType.sys.id]})}
+					key={contentType.sys.id + 'old'}
+					onClick={() => onAdd(contentType.sys.id)}
 				>
 					{contentType.name}
 				</Menu.Item>
