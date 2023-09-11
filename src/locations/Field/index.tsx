@@ -20,6 +20,7 @@ const Field = () => {
   const locale = sdk.locales.default;
   const [contentTypes, setContentTypes] = useState<ContentType[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
+
   sdk.window.startAutoResizer();
 
   // Fetch the content types so that we can display the names, e.g. "Add new {content type name}"
@@ -80,7 +81,7 @@ const Field = () => {
   return (
     <>
       {/* Existing entries */}
-      <Entries types={contentTypes} entries={entries} locale={locale} onRemove={onRemove} />
+      <Entries sdk={sdk} types={contentTypes} entries={entries} locale={locale} onRemove={onRemove} />
 
       {contentTypes.length === 0 && (
         <Button onClick={() => sdk.dialogs.selectSingleEntry()}>

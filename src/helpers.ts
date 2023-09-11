@@ -68,6 +68,7 @@ export async function attachEntry({ sdk, entity, entries, locale }: SetEntry) {
 		}
 	}))
 	await sdk.entry.fields[sdk.field.id].setValue(updatedEntries, locale);
+	sdk.navigator.openEntry(entity.sys.id, { slideIn: true });
 
 	return [...entries, entity];
 };
