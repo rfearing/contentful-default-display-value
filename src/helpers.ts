@@ -52,30 +52,37 @@ export async function createEntry({sdk, typeId, key, value}: CreateEntry) {
 	});
 };
 
-type AttachEntry = {
+type SetEntry = {
 	sdk: FieldAppSDK;
 	entity: Entry;
 	entries: Entry[];
 	locale: string;
 }
 
-export function attachEntry({ sdk, entity, entries, locale }: AttachEntry) {
-	sdk.entry.fields[sdk.field.id].setValue([
-		...(entries.map(entry => entry.sys)),
-		{
-			sys: {
-				type: "Link",
-				linkType: "Entry",
-				id: entity.sys.id,
-			}
-		}],
-		locale
-	);
-	sdk.navigator.openEntry(entity.sys.id, { slideIn: true });
+export async function attachEntry({ sdk, entity, entries, locale }: SetEntry) {
+	const updatedEntries = [...entries, entity].map(entry => ({
+		sys: {
+			type: "Link",
+			linkType: "Entry",
+			id: entry.sys.id,
+		}
+	}))
+	await sdk.entry.fields[sdk.field.id].setValue(updatedEntries, locale);
+
+	return [...entries, entity];
 };
 
-export function removeEntry({ sdk, entity }: Omit<AttachEntry, 'locale'>) {
-	const updatedValue = sdk.field.getValue().filter((entry: Entry)=> entry.sys.id !== entity.sys.id)
-	sdk.field.setValue(updatedValue)
-	// TODO: Update the visual. Currently only updates on save.
-};
+/* Remove an entity and return the new list */
+export async function removeEntry({ sdk, entity, entries, locale }: SetEntry) {
+	const remaining = entries.filter((entry: Entry)=> entry.sys.id !== entity.sys.id)
+	const updatedEntries = remaining.map(entry => ({
+		sys: {
+			type: "Link",
+			linkType: "Entry",
+			id: entry.sys.id,
+		}
+	}))
+	await sdk.entry.fields[sdk.field.id].setValue(updatedEntries, locale)
+
+	return remaining;
+}

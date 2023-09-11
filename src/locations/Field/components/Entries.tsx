@@ -1,18 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { EntryCard, MenuItem } from '@contentful/f36-components';
-import { ContentType, Entry, FieldAppSDK } from '@contentful/app-sdk';
+import { ContentType, Entry } from '@contentful/app-sdk';
 import { css } from 'emotion';
-import { status, removeEntry } from '../../../helpers'
+import { status } from '../../../helpers'
 
 type EntriesProps = {
-	sdk: FieldAppSDK;
 	entries: Entry[];
 	types: ContentType[];
 	locale: string;
+	onRemove: (entry: Entry) => void;
 }
 
-/* TODO: Remove card */
-const Entries = ({entries, types, locale, sdk}: EntriesProps) => {
+/**
+ * Displays a list of entries
+ */
+const Entries = ({entries, types, locale, onRemove}: EntriesProps) => {
 	return entries.map(entry => {
 		const contentType = types.find(contentType => contentType.sys.id === entry.sys.contentType.sys.id);
 		if (!contentType) {
@@ -27,7 +29,7 @@ const Entries = ({entries, types, locale, sdk}: EntriesProps) => {
 				contentType={contentType.name}
 				title={entry.fields[contentType.displayField][locale]}
 				actions={[
-					<MenuItem key="remove" onClick={() => removeEntry({sdk, entity: entry, entries})}>
+					<MenuItem key="remove" onClick={() => onRemove(entry)}>
 						Remove
 					</MenuItem>,
 				]}
