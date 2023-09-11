@@ -73,3 +73,9 @@ export function attachEntry({ sdk, entity, entries, locale }: AttachEntry) {
 	);
 	sdk.navigator.openEntry(entity.sys.id, { slideIn: true });
 };
+
+export function removeEntry({ sdk, entity }: Omit<AttachEntry, 'locale'>) {
+	const updatedValue = sdk.field.getValue().filter((entry: Entry)=> entry.sys.id !== entity.sys.id)
+	sdk.field.setValue(updatedValue)
+	// TODO: Update the visual. Currently only updates on save.
+};

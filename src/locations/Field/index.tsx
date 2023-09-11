@@ -53,7 +53,7 @@ const Field = () => {
   return (
     <>
       {/* Existing entries */}
-      <Entries types={contentTypes} entries={entries} locale={locale} />
+      <Entries types={contentTypes} entries={entries} locale={locale} sdk={sdk} />
 
       {contentTypes.length === 0 && (
         <Button onClick={() => sdk.dialogs.selectSingleEntry()}>
