@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react';
-import { Button, Menu } from '@contentful/f36-components';
+import { Button, Menu, Note } from '@contentful/f36-components';
 import { ChevronDownIcon } from '@contentful/f36-icons';
 import { FieldAppSDK, ContentType, Entry } from '@contentful/app-sdk';
 import { useSDK } from '@contentful/react-apps-toolkit';
@@ -20,6 +20,7 @@ const Field = () => {
   const locale = sdk.locales.default;
   const [contentTypes, setContentTypes] = useState<ContentType[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [warning, setWarning] = useState<string>();
 
   sdk.window.startAutoResizer();
 
@@ -35,6 +36,9 @@ const Field = () => {
 
     (async () => {
       const contentTypes = await Promise.all(modelRestrictions.map(id => sdk.cma.contentType.get(({contentTypeId:id}))))
+      if (contentTypes.length === 0) {
+        setWarning('You should set this field\'s content type validation or use the default appearance.')
+      }
       setContentTypes(contentTypes);
     })();
   }, []);
@@ -78,16 +82,15 @@ const Field = () => {
     setEntries(updatedEntries);
   }
 
+  if (warning) {
+    return <Note variant="warning">{warning}</Note>
+  }
+
   return (
     <>
+      {warning && <Note variant="warning">{warning}</Note>}
       {/* Existing entries */}
       <Entries sdk={sdk} types={contentTypes} entries={entries} locale={locale} onRemove={onRemove} />
-
-      {contentTypes.length === 0 && (
-        <Button onClick={() => sdk.dialogs.selectSingleEntry()}>
-          Add existing content
-        </Button>
-      )}
 
       {contentTypes.length > 0 && (
         <Menu>
