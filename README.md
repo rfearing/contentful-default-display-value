@@ -1,11 +1,21 @@
 This project was bootstrapped with [Create Contentful App](https://github.com/contentful/create-contentful-app).
 
-## TODO
+# Contentful App: Default Display Value from Parent Entry
 
-1. Write README
+This app is a custom field editor for Contentful. It allows you to set the display field of a linked entry based on the display field of the current.
+
+For example:
+
+- You have a `Page` content type that includes a `title` field as its display field.
+- You have a `Section` content type that also has a `title` field as its display field.
+- The `Page` content model has a reference field to `Section`.
+
+When you select a `Section` entry in the `Page` entry, the `title` field of the `Section` entry will be the the `Page`'s title followed by "Section".
+
+For example: `My Cool Page::Section`.
 
 <details>
-<summary>Running the App</summary>
+<summary>Running the App (Create Contentful App Docs)</summary>
 
 
 ## How to use
